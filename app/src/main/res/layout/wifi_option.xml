@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/txtSSID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="SSID" />
+
+    <TextView
+        android:id="@+id/txtBSSID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtSSID"
+        android:layout_centerHorizontal="true"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/txtNetID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtBSSID"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:text="NetworkID" />
+
+    <Button
+        android:id="@+id/buttonBack"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/txtNetID"
+        android:layout_marginEnd="-100dp"
+        android:layout_toStartOf="@id/txtNetID"
+        android:text="Back" />
+
+    <Button
+        android:id="@+id/buttonForget"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/txtNetID"
+        android:layout_marginStart="-100dp"
+        android:layout_toEndOf="@id/txtNetID"
+        android:text="Forget" />
+
+    <Button
+        android:id="@+id/buttonConnect"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_alignTop="@+id/buttonBack"
+        android:layout_centerHorizontal="true"
+        android:text="Connect" />
+</RelativeLayout>
