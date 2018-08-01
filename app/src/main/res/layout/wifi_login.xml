@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <TextView
+        android:layout_width="69dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/txtKey"
+        android:layout_toStartOf="@+id/txtKey"
+        android:text="Password" />
+
+    <EditText
+        android:id="@+id/txtKey"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/buttonLogin"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/txtKey"
+        android:layout_toEndOf="@+id/txtKey"
+        android:layout_marginLeft="-50dp"
+        android:text="Login" />
+
+    <Button
+        android:id="@+id/buttonBack"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_toStartOf="@+id/txtKey"
+        android:layout_below="@+id/txtKey"
+        android:layout_marginRight="-50dp"
+        android:text="Back" />
+
+</RelativeLayout>
