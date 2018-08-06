@@ -35,6 +35,7 @@
             android:id="@+id/buttonFlush"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
+            android:contentDescription="Flush all network configurated on this application."
             android:text="Flush" />
 
         <Button

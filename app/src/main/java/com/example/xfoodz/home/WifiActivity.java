@@ -1,12 +1,8 @@
 package com.example.xfoodz.home;
 
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
@@ -14,20 +10,19 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,13 +53,14 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
 
     private String ITEM_KEY = "key";
     private ArrayList<HashMap<String, String>> arraylist = new ArrayList<HashMap<String, String>>();
-    private SimpleAdapter adapter;
 
     private boolean check = false;
     private TimerTask connecting_;
     private Timer timer;
     private int i = 0;
     private int curID = 0;
+
+    WifiAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,20 +79,13 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
         wifiList = findViewById(R.id.list);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifiManager.isWifiEnabled() == false) {
+        if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);
         }
 
-        this.adapter = new SimpleAdapter(this, arraylist, R.layout.row, new String[]{ITEM_KEY}, new int[]{R.id.list_value});
-        wifiList.setAdapter(this.adapter);
-
-        registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context c, Intent intent) {
-                if (wifiManager.isWifiEnabled()) {
-                }
-            }
-        }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        results = wifiManager.getScanResults();
+        adapter = new WifiAdapter(this, arraylist, results);
+        wifiList.setAdapter(adapter);
 
         mScan.post(mScanRunnable);
 
@@ -113,13 +102,103 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
                             break;
                         }
                     }
-                    if (log) login(results.get(i).SSID);
+                    if (log) {
+                        String capabilities =  results.get(i).capabilities;
+                        if (capabilities.contains("PSK")){
+                            login(results.get(i).SSID);
+                        }
+                        else if(capabilities.contains("WEP")){
+                            login(results.get(i).SSID);
+                        }
+                        else if(capabilities.contains("EAP")){
+                            login(results.get(i).SSID);
+                        }
+                        else {
+                            for (WifiConfiguration j : list) {
+                                wifiManager.disableNetwork(j.networkId);
+                            }
+                            WifiConfiguration wifiConfig = new WifiConfiguration();
+                            String SSID = results.get(i).SSID;
+                            wifiConfig.SSID = String.format("\"%s\"", SSID);
+                            int netId = wifiManager.addNetwork(wifiConfig);
+                            curID = netId;
+                            wifiManager.disconnect();
+                            wifiManager.enableNetwork(netId, true);
+                            wifiManager.reconnect();
+
+                            check = true;
+                        }
+                    }
                 }
                 else Toast.makeText(context, "Wifi disabled!", Toast.LENGTH_SHORT).show();
             }
         });
 
         mWifi.post(mWifiRunnable);
+    }
+
+    public void onClick(View view) {
+        if (view == buttonFlush) {
+            final Dialog flushDialog = new Dialog(this);
+            flushDialog.setContentView(R.layout.wifi_flush);
+            flushDialog.setCancelable(true);
+            final Button agree = flushDialog.findViewById(R.id.buttonAgree);
+            Button back = flushDialog.findViewById(R.id.buttonBack);
+            EditText key = flushDialog.findViewById(R.id.txtAgree);
+            agree.setEnabled(false);
+
+            flushDialog.setTitle("Warning");
+            flushDialog.show();
+            key.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if(String.valueOf(charSequence).equals("AGREE")) agree.setEnabled(true);
+                    else agree.setEnabled(false);
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
+                }
+            });
+
+            agree.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+                    for (WifiConfiguration i : list) {
+                        wifiManager.removeNetwork(i.networkId);
+                    }
+                    Toast.makeText(context, "Successfully flushed all configurations!", Toast.LENGTH_SHORT).show();
+                    flushDialog.cancel();
+                }
+            });
+
+            back.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    flushDialog.cancel();
+                }
+            });
+
+        } else if (view == buttonEnable) {
+            if (!wifiManager.isWifiEnabled()) {
+                wifiManager.setWifiEnabled(true);
+                buttonEnable.setText("Disable");
+                wifiState.setText("Enabled");
+            } else {
+                wifiManager.setWifiEnabled(false);
+                buttonEnable.setText("Enable");
+                wifiState.setText("Disabled");
+            }
+        } else if (view == buttonBack) {
+            startActivity(new Intent(this, MainActivity.class));
+        }
     }
 
     private void option(final WifiConfiguration conf) {
@@ -194,7 +273,7 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText txtKey = myDialog.findViewById(R.id.txtKey);
+                EditText txtKey = myDialog.findViewById(R.id.txtAgree);
                 Log.d("ssid", SSID);
                 Log.d("key", txtKey.getText().toString());
 
@@ -224,23 +303,6 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
                 return;
             }
         });
-    }
-
-    public void onClick(View view) {
-        if (view == buttonFlush) {
-        } else if (view == buttonEnable) {
-            if (wifiManager.isWifiEnabled() == false) {
-                wifiManager.setWifiEnabled(true);
-                buttonEnable.setText("Disable");
-                wifiState.setText("Enabled");
-            } else {
-                wifiManager.setWifiEnabled(false);
-                buttonEnable.setText("Enable");
-                wifiState.setText("Disabled");
-            }
-        } else if (view == buttonBack) {
-            startActivity(new Intent(this, MainActivity.class));
-        }
     }
 
     private Runnable mTimeRunnable = new Runnable() {
@@ -276,7 +338,7 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
                         i = 0;
                     }
                     else {
-                        wifiState.setText("Checking..." + i);
+                        wifiState.setText("Checking...");
                         i++;
                     }
                 } else {
@@ -294,7 +356,7 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
                 }
                 else wifiState.setText("No connection");
             }
-            if(wifiManager.isWifiEnabled() == false) level = -1;
+            if(!wifiManager.isWifiEnabled()) level = -1;
             switch(level){
                 case 0:
                     wifiManager.reconnect();
@@ -312,7 +374,7 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
                 case 4:
                     mImageView.setImageResource(R.drawable.ic_signal_wifi_4_bar_black_48dp);
                     break;
-                case -1:
+                default:
                     mImageView.setImageResource(R.drawable.ic_signal_wifi_off_bar_black_48dp);
                     break;
             }
@@ -354,20 +416,26 @@ public class WifiActivity extends MainActivity implements View.OnClickListener {
     private Runnable mScanRunnable = new Runnable() {
         @Override
         public void run() {
-            results = wifiManager.getScanResults();
-            size = results.size();
-            arraylist.clear();
-            wifiManager.startScan();
-            int i = 0;
-            while (i < size) {
-                HashMap<String, String> item = new HashMap<String, String>();
-                item.put(ITEM_KEY, results.get(i).SSID + "  " + results.get(i).capabilities);
-
-                arraylist.add(item);
-                adapter.notifyDataSetChanged();
-                i++;
+            if (!wifiManager.isWifiEnabled()){
+                arraylist.clear();
+                mScan.postDelayed(mScanRunnable, 500);
             }
-            mScan.postDelayed(mScanRunnable, 10000);
+            else {
+                results = wifiManager.getScanResults();
+                size = results.size();
+                arraylist.clear();
+                int i = 0;
+                while (i < size) {
+                    HashMap<String, String> item = new HashMap<String, String>();
+                    item.put(ITEM_KEY, results.get(i).SSID);
+
+                    arraylist.add(item);
+                    adapter.notifyDataSetChanged();
+
+                    i++;
+                }
+                mScan.postDelayed(mScanRunnable, 10000);
+            }
         }
     };
 

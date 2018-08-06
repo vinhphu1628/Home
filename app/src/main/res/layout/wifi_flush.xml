@@ -5,30 +5,34 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
-        android:layout_width="69dp"
+        android:id="@+id/textBox"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/txtAgree"
-        android:layout_toStartOf="@+id/txtAgree"
-        android:text="Password" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:padding="15dp"
+        android:text="After agree to this, all of your saved network configuration will be FLUSH! (type AGREE in the text box to proceed)." />
 
     <EditText
         android:id="@+id/txtAgree"
         android:layout_width="140dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/textBox"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="30dp"
-        android:inputType="textPassword" />
+        android:layout_centerInParent="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
+        android:inputType="textCapCharacters" />
 
     <Button
-        android:id="@+id/buttonLogin"
+        android:id="@+id/buttonAgree"
         android:layout_width="100dp"
         android:layout_height="40dp"
         android:layout_below="@+id/txtAgree"
-        android:layout_toEndOf="@+id/txtAgree"
         android:layout_marginLeft="-50dp"
-        android:text="Login" />
+        android:layout_toEndOf="@+id/txtAgree"
+        android:text="Agree" />
 
     <Button
         android:id="@+id/buttonBack"
