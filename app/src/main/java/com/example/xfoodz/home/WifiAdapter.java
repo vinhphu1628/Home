@@ -20,7 +20,7 @@ import static android.content.ContentValues.TAG;
 public class WifiAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<HashMap<String, String>> list;
-    private List<ScanResult> results;
+    private ArrayList<String> signal;
 
     @Override
     public int getCount()
@@ -41,10 +41,10 @@ public class WifiAdapter extends BaseAdapter {
     }
 
 
-    public WifiAdapter(Context context, ArrayList<HashMap<String, String>> list, List<ScanResult> results) {
+    public WifiAdapter(Context context, ArrayList<HashMap<String, String>> list, ArrayList<String> signal) {
         this.context = context;
         this.list = list;
-        this.results = results;
+        this.signal = signal;
     }
 
     public View getView(int position, View view, ViewGroup parent) {
@@ -55,24 +55,7 @@ public class WifiAdapter extends BaseAdapter {
 
         txtTitle.setText(list.get(position).get("key"));
 
-        ScanResult scanResult = results.get(position);
-
-        String capabilities =  scanResult.capabilities;
-
-        int level = WifiManager.calculateSignalLevel(scanResult.level, 5);
-        String txtLevel = String.valueOf(level);
-
-        if (capabilities.contains("PSK")){
-            txtLevel = txtLevel + "LOCK";
-        }
-        else if(capabilities.contains("WEP")){
-            txtLevel = txtLevel + "LOCK";
-        }
-        else if(capabilities.contains("EAP")){
-            txtLevel = txtLevel + "LOCK";
-        }
-
-        switch (txtLevel) {
+        switch (signal.get(position)) {
             case "0":
                 imageView.setImageResource(R.drawable.ic_signal_wifi_0_bar_black_48dp);
                 break;

@@ -11,6 +11,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -50,25 +51,16 @@ import java.util.List;
  * @see <a href="https://github.com/androidthings/contrib-drivers#readme">https://github.com/androidthings/contrib-drivers#readme</a>
  */
 public class MainActivity extends Activity implements View.OnClickListener {
-    private TextView date;
-    private TextView time;
+    private TextView date, time;
     private Handler mTime = new Handler();
     private int level = 0;
     private Context context = this;
     private Handler mWifi = new Handler();
     private WifiManager wifi;
     private ImageView mImageView;
-    private Button buttonSetting;
-    private Button buttonList;
-
-    private ListView appList;
-    private String ITEM_KEY = "key";
-    private ArrayList<HashMap<String, String>> arraylist = new ArrayList<HashMap<String, String>>();
-    private SimpleAdapter adapter;
+    private CardView appCard, settingCard;
 
     //private Button buttonExit;
-    private List<App> applist;
-    private int appSize = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,46 +70,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mWifi.post(mWifiRunnable);
         mTime.post(mTimeRunnable);
 
-        buttonSetting = findViewById(R.id.buttonSetting);
-        buttonSetting.setOnClickListener(this);
+
         //buttonExit = findViewById(R.id.buttonExit);
         //buttonExit.setOnClickListener(this);
-        buttonList = findViewById(R.id.buttonList);
-        buttonList.setOnClickListener(this);
 
-        appList = findViewById(R.id.appList);
+        appCard = findViewById(R.id.app_card);
+        appCard.setOnClickListener(this);
+        settingCard = findViewById(R.id.setting_card);
+        settingCard.setOnClickListener(this);
 
-        this.adapter = new SimpleAdapter(this, arraylist, R.layout.app_list, new String[]{ITEM_KEY}, new int[]{R.id.list_value});
-        appList.setAdapter(this.adapter);
-
-        appList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(context, "App name is: " + applist.get(i).getName(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override
     public void onClick(View view) {
-        if(view == buttonSetting){
-            startActivity(new Intent(this, WifiActivity.class));
+        if(view == appCard){
+            startActivity(new Intent(this, AppActivity.class));
         }
-        else if(view == buttonList){
-            arraylist.clear();
-            applist = new ArrayList<App>(getAllApplications(context, false));
-            int i = 0;
-            appSize = applist.size();
-            Toast.makeText(context, String.valueOf(applist.size()) + " applications loaded!", Toast.LENGTH_SHORT).show();
-            while(appSize > 0){
-                HashMap<String, String> item = new HashMap<String, String>();
-                item.put(ITEM_KEY, applist.get(i).getName());
-
-                arraylist.add(item);
-                appSize--;
-                adapter.notifyDataSetChanged();
-                i++;
-            }
+        else if(view == settingCard){
+            startActivity(new Intent(this, SettingActivity.class));
         }
         /*if(view == buttonExit){
             finish();
@@ -171,61 +141,4 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     };
 
-    private List getAllApplications(Context context, boolean includeSystemApps) {
-        PackageManager packageManager = context.getPackageManager();
-        List packages = packageManager.getInstalledPackages(0);
-
-        List installedApps = new ArrayList<>();
-
-        for (int i = 0;i<packages.size();i++) {
-            PackageInfo pkgInfo = (PackageInfo) packages.get(i);
-            if (pkgInfo.versionName == null) {
-                continue;
-            }
-
-
-            App newApp = new App();
-            boolean isSystemApp = ((pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
-
-            newApp.setPackageName(pkgInfo.packageName);
-            newApp.setName(pkgInfo.applicationInfo.loadLabel(packageManager).toString());
-            newApp.setIcon(pkgInfo.applicationInfo.loadIcon(packageManager));
-
-            if (includeSystemApps || !isSystemApp) {
-                installedApps.add(newApp);
-            }
-        }
-
-        return installedApps;
-    }
-
-    class App {
-        private String packageName;
-        private String name;
-        private Drawable icon;
-
-        String getPackageName() {
-            return packageName;
-        }
-
-        void setPackageName(String packageName) {
-            this.packageName = packageName;
-        }
-
-        String getName() {
-            return name;
-        }
-
-        void setName(String name) {
-            this.name = name;
-        }
-
-        public Drawable getIcon() {
-            return icon;
-        }
-
-        public void setIcon(Drawable icon) {
-            this.icon = icon;
-        }
-    }
 }
