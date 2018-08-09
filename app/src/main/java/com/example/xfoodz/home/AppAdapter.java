@@ -90,51 +90,10 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
                     delete.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            final Dialog deleteDialog = new Dialog(itemView.getContext());
-                            deleteDialog.setContentView(R.layout.app_delete);
-                            deleteDialog.setCancelable(true);
-                            final Button agree = deleteDialog.findViewById(R.id.buttonAgree);
-                            Button back = deleteDialog.findViewById(R.id.buttonBack);
-                            EditText key = deleteDialog.findViewById(R.id.txtAgree);
-                            agree.setEnabled(false);
-
-                            deleteDialog.setTitle("Warning");
-                            deleteDialog.show();
-                            key.addTextChangedListener(new TextWatcher() {
-                                @Override
-                                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                                }
-
-                                @Override
-                                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                                    if(String.valueOf(charSequence).equals("AGREE")) agree.setEnabled(true);
-                                    else agree.setEnabled(false);
-                                }
-
-                                @Override
-                                public void afterTextChanged(Editable editable) {
-
-                                }
-                            });
-
-                            agree.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    Intent DeleteIntent = new Intent(Intent.ACTION_DELETE);
-                                    DeleteIntent.setData(Uri.parse("package:" + appPackage.getText().toString()));
-                                    view.getContext().startActivity(DeleteIntent);
-                                    deleteDialog.cancel();
-                                    myDialog.cancel();
-                                }
-                            });
-
-                            back.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    deleteDialog.cancel();
-                                }
-                            });
+                            Intent DeleteIntent = new Intent(Intent.ACTION_DELETE);
+                            DeleteIntent.setData(Uri.parse("package:" + appPackage.getText().toString()));
+                            view.getContext().startActivity(DeleteIntent);
+                            myDialog.cancel();
                         }
                     });
                     back.setOnClickListener(new View.OnClickListener() {
