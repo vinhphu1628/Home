@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -67,7 +68,7 @@ import static android.content.ContentValues.TAG;
  *
  * @see <a href="https://github.com/androidthings/contrib-drivers#readme">https://github.com/androidthings/contrib-drivers#readme</a>
  */
-public class MainActivity extends Activity implements View.OnClickListener, NPNHomeView {
+public class MainActivity extends Activity implements View.OnClickListener, NPNHomeView, TextToSpeech.OnInitListener {
     private TextView date, time;
     private Handler mTime = new Handler();
     private int level = 0;
@@ -91,7 +92,7 @@ public class MainActivity extends Activity implements View.OnClickListener, NPNH
     private Handler mIdle = new Handler();
     private boolean idle = false;
 
-    private Button buttonExit;
+//    private Button buttonExit;
 
     private Handler mHandler = new Handler();
     private boolean mLedState = false;
@@ -141,13 +142,29 @@ public class MainActivity extends Activity implements View.OnClickListener, NPNH
     private boolean isAllowProcess = true;
     int testCounter = 0;
     String name = "KSD";
-    String link = "http://192.168.0.188:3000/api/test/android?code=1";
+    String link = "http://f67bda42.ngrok.io/api/test/android?code=1";
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //do they have the data
+        if (requestCode == DATA_CHECKING) {
+            //yep - go ahead and instantiate
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS)
+                niceTTS = new TextToSpeech(this, this);
+                //no data, prompt to install it
+            else {
+                Intent promptInstall = new Intent();
+                promptInstall.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(promptInstall);
+            }
+        }
+    }
 
     public void onInit(int initStatus) {
         if (initStatus == TextToSpeech.SUCCESS) {
             niceTTS.setLanguage(Locale.forLanguageTag("VI"));
         }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -188,8 +205,8 @@ public class MainActivity extends Activity implements View.OnClickListener, NPNH
         mTime.post(mTimeRunnable);
         mIdle.post(mIdleRunnable);
 
-        buttonExit = findViewById(R.id.buttonExit);
-        buttonExit.setOnClickListener(this);
+//        buttonExit = findViewById(R.id.buttonExit);
+//        buttonExit.setOnClickListener(this);
 
         numberCard = findViewById(R.id.number_card);
         numberCard.setOnClickListener(this);
@@ -609,15 +626,17 @@ public class MainActivity extends Activity implements View.OnClickListener, NPNH
             }
             else Toast.makeText(context, "This application is not available!", Toast.LENGTH_SHORT).show();
         }
-        if(view == buttonExit){
-            finish();
-            System.exit(0);
-        }
+//        if(view == buttonExit){
+//            finish();
+//            System.exit(0);
+//        }
     }
 
     private Runnable mTimeRunnable = new Runnable() {
         @Override
         public void run() {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT+7"));
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
             date.setText(format.format(new Date()));
             format = new SimpleDateFormat("hh:mm");
